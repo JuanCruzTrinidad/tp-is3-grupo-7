@@ -1,5 +1,8 @@
 import os
 import re
+from datetime import datetime
+
+from dateutil import parser as dateutil_parser
 
 # Patrón que identifica el inicio de una línea con timestamp de WhatsApp.
 # Cubre formatos con y sin cero inicial: "8/11/2018" y "08/11/2018".
@@ -112,6 +115,26 @@ def get_participants(messages: list[dict]) -> list[str]:
             seen.add(sender)
             participants.append(sender)
     return participants
+
+
+def parse_timestamp(timestamp_str: str) -> datetime:
+    """
+    Convierte un string de timestamp de WhatsApp a un objeto datetime.
+
+    El formato esperado es el generado por WhatsApp en Argentina:
+    "DD/MM/YYYY, HH:MM", con día y mes que pueden tener uno o dos dígitos
+    (ej: "8/11/2018, 9:51" o "14/10/2018, 19:51").
+
+    Parámetros:
+        timestamp_str (str): String de timestamp extraído por parse_lines().
+
+    Retorna:
+        datetime: Objeto datetime con la fecha y hora del mensaje.
+
+    Lanza:
+        ValueError: Si el string no puede interpretarse como fecha válida.
+    """
+    return dateutil_parser.parse(timestamp_str, dayfirst=True)
 
 
 def validate_format(raw_text: str) -> bool:
