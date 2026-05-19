@@ -90,6 +90,30 @@ def parse_lines(raw_text: str) -> list[dict]:
     return messages
 
 
+def get_participants(messages: list[dict]) -> list[str]:
+    """
+    Extrae la lista de participantes únicos del chat.
+
+    Recorre los mensajes ya parseados por parse_lines() y recolecta todos
+    los remitentes distintos, manteniendo el orden de primera aparición.
+
+    Parámetros:
+        messages (list[dict]): Lista de mensajes retornada por parse_lines().
+
+    Retorna:
+        list[str]: Lista de nombres de participantes sin duplicados,
+                   en orden de primera aparición en el chat.
+    """
+    seen = set()
+    participants = []
+    for msg in messages:
+        sender = msg["sender"]
+        if sender not in seen:
+            seen.add(sender)
+            participants.append(sender)
+    return participants
+
+
 def validate_format(raw_text: str) -> bool:
     """
     Verifica que el texto corresponde al formato de exportación de WhatsApp.
