@@ -88,3 +88,27 @@ def parse_lines(raw_text: str) -> list[dict]:
         messages.append(current)
 
     return messages
+
+
+def validate_format(raw_text: str) -> bool:
+    """
+    Verifica que el texto corresponde al formato de exportación de WhatsApp.
+
+    Considera válido el archivo si al menos 5 líneas presentan el patrón
+    de timestamp de WhatsApp. Usar un umbral mayor a 1 evita falsos positivos
+    con archivos de texto que tengan fechas por coincidencia.
+
+    Parámetros:
+        raw_text (str): Texto a validar, normalmente retornado por load_file().
+
+    Retorna:
+        bool: True si el formato es reconocible como export de WhatsApp.
+    """
+    if not raw_text or not raw_text.strip():
+        return False
+
+    matches = sum(
+        1 for line in raw_text.splitlines()
+        if _SYSTEM_LINE_RE.match(line)
+    )
+    return matches >= 5
