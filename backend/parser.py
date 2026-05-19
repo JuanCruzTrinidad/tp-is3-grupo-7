@@ -1,7 +1,9 @@
 import os
 import re
+from collections import Counter
 from datetime import datetime
 
+import emoji
 from dateutil import parser as dateutil_parser
 
 # Patrón que identifica el inicio de una línea con timestamp de WhatsApp.
@@ -115,6 +117,28 @@ def get_participants(messages: list[dict]) -> list[str]:
             seen.add(sender)
             participants.append(sender)
     return participants
+
+
+def count_emojis(messages: list[dict]) -> dict[str, int]:
+    """
+    Identifica y cuenta los emojis presentes en todos los mensajes del chat.
+
+    Recorre el campo "message" de cada entrada y extrae los emojis usando
+    la librería emoji. Retorna un diccionario ordenado de mayor a menor
+    frecuencia.
+
+    Parámetros:
+        messages (list[dict]): Lista de mensajes retornada por parse_lines().
+
+    Retorna:
+        dict[str, int]: Diccionario {emoji: cantidad}, ordenado por frecuencia
+                        descendente.
+    """
+    counter: Counter = Counter()
+    for msg in messages:
+        for token in emoji.analyze(msg["message"]):
+            counter[token.chars] += 1
+    return dict(counter.most_common())
 
 
 def parse_timestamp(timestamp_str: str) -> datetime:
