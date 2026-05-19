@@ -27,6 +27,25 @@ def messages_by_hour(messages: list[dict]) -> dict[int, int]:
     return {hour: counter.get(hour, 0) for hour in range(24)}
 
 
+def peak_hour(messages: list[dict]) -> tuple[int, int]:
+    """
+    Identifica la franja horaria con mayor cantidad de mensajes en el chat.
+
+    Utiliza messages_by_hour() para obtener la distribución por hora y
+    retorna la hora con más actividad junto con su cantidad de mensajes.
+
+    Parámetros:
+        messages (list[dict]): Lista de mensajes retornada por parse_lines().
+
+    Retorna:
+        tuple[int, int]: Par (hora, cantidad_de_mensajes) de la franja
+                         horaria más activa del chat.
+    """
+    by_hour = messages_by_hour(messages)
+    hour = max(by_hour, key=lambda h: by_hour[h])
+    return (hour, by_hour[hour])
+
+
 def count_emojis_per_user(messages: list[dict]) -> dict[str, dict[str, int]]:
     """
     Extrae y cuenta los emojis usados por cada participante del chat.
