@@ -27,6 +27,28 @@ def messages_by_hour(messages: list[dict]) -> dict[int, int]:
     return {hour: counter.get(hour, 0) for hour in range(24)}
 
 
+def messages_by_date(messages: list[dict]) -> dict[str, int]:
+    """
+    Agrupa los mensajes según la fecha en que fueron enviados.
+
+    Extrae la fecha de cada timestamp usando parse_timestamp() y acumula
+    la cantidad de mensajes por día. Las fechas se representan como strings
+    en formato ISO (YYYY-MM-DD) y se ordenan cronológicamente.
+
+    Parámetros:
+        messages (list[dict]): Lista de mensajes retornada por parse_lines().
+
+    Retorna:
+        dict[str, int]: Diccionario {fecha: cantidad_de_mensajes} ordenado
+                        cronológicamente, con fechas en formato YYYY-MM-DD.
+    """
+    counter: Counter = Counter()
+    for msg in messages:
+        date = parse_timestamp(msg["timestamp"]).date().isoformat()
+        counter[date] += 1
+    return dict(sorted(counter.items()))
+
+
 def peak_hour(messages: list[dict]) -> tuple[int, int]:
     """
     Identifica la franja horaria con mayor cantidad de mensajes en el chat.
