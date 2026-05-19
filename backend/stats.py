@@ -2,6 +2,30 @@ from collections import Counter
 
 import emoji
 
+from .parser import parse_timestamp
+
+
+def messages_by_hour(messages: list[dict]) -> dict[int, int]:
+    """
+    Agrupa los mensajes según la hora del día en que fueron enviados.
+
+    Extrae la hora de cada timestamp usando parse_timestamp() y acumula
+    la cantidad de mensajes por cada franja horaria (0–23). Las horas sin
+    mensajes se incluyen con valor 0 para facilitar la visualización.
+
+    Parámetros:
+        messages (list[dict]): Lista de mensajes retornada por parse_lines().
+
+    Retorna:
+        dict[int, int]: Diccionario {hora: cantidad_de_mensajes} con las
+                        24 horas del día ordenadas de 0 a 23.
+    """
+    counter: Counter = Counter()
+    for msg in messages:
+        hour = parse_timestamp(msg["timestamp"]).hour
+        counter[hour] += 1
+    return {hour: counter.get(hour, 0) for hour in range(24)}
+
 
 def count_emojis_per_user(messages: list[dict]) -> dict[str, dict[str, int]]:
     """
