@@ -7,7 +7,68 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>WhatsApp Chat Analyzer</h1>
+  <header>
+    <h1>WhatsApp Chat Analyzer</h1>
+    <p>Subí el <code>.zip</code> exportado desde WhatsApp para ver las estadísticas del grupo.</p>
+  </header>
+
+  <main>
+    <!-- Subida de archivo -->
+    <section id="upload">
+      <form id="upload-form" enctype="multipart/form-data">
+        <label for="file-input">Seleccioná el archivo <code>.zip</code></label>
+        <input id="file-input" type="file" name="file" accept=".zip" required />
+        <button type="submit">Analizar</button>
+      </form>
+      <p id="upload-status" aria-live="polite"></p>
+    </section>
+
+    <!-- Resultados (ocultos hasta recibir datos) -->
+    <div id="results" hidden>
+
+      <!-- Resumen general -->
+      <section id="summary">
+        <h2>Resumen</h2>
+        <ul>
+          <li>Total de mensajes: <strong id="summary-total"></strong></li>
+          <li>Participantes: <strong id="summary-participants"></strong></li>
+          <li>Emoji más usado: <strong id="summary-emoji"></strong></li>
+        </ul>
+      </section>
+
+      <!-- Gráfico: mensajes por usuario -->
+      <section id="chart-user">
+        <h2>Mensajes por participante</h2>
+        <canvas aria-label="Mensajes por participante"></canvas>
+      </section>
+
+      <!-- Gráfico: actividad por hora -->
+      <section id="chart-hour">
+        <h2>Actividad por hora del día</h2>
+        <canvas aria-label="Actividad por hora del día"></canvas>
+      </section>
+
+      <!-- Gráfico: distribución por día de semana -->
+      <section id="chart-weekday">
+        <h2>Mensajes por día de la semana</h2>
+        <canvas aria-label="Mensajes por día de la semana"></canvas>
+      </section>
+
+      <!-- Gráfico: top días -->
+      <section id="chart-top-days">
+        <h2>Top 5 días más activos</h2>
+        <canvas aria-label="Top 5 días más activos"></canvas>
+      </section>
+
+      <!-- Word cloud -->
+      <section id="wordcloud">
+        <h2>Nube de palabras</h2>
+        <img id="wordcloud-img" alt="Nube de palabras del chat" />
+      </section>
+
+    </div>
+  </main>
+
   <script src="app.js"></script>
 </body>
 </html>
