@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 
 from stats import top_days, messages_by_weekday
+from text_utils import clean_text
 
 app = Flask(__name__)
 
@@ -32,6 +33,12 @@ def stats_top_days():
         "top_days": top_days(_SAMPLE_MESSAGES),
         "messages_by_weekday": messages_by_weekday(_SAMPLE_MESSAGES),
     })
+
+
+@app.route("/utils/clean-text", methods=["GET"])
+def utils_clean_text():
+    """Endpoint de prueba para Task 2 — usa datos hardcodeados."""
+    return jsonify({"clean_text": clean_text(_SAMPLE_MESSAGES)})
 
 
 if __name__ == "__main__":
