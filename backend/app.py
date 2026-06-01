@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 
 from stats import top_days, messages_by_weekday
-from text_utils import clean_text
+from text_utils import clean_text, generate_wordcloud_base64
 
 app = Flask(__name__)
 
@@ -39,6 +39,12 @@ def stats_top_days():
 def utils_clean_text():
     """Endpoint de prueba para Task 2 — usa datos hardcodeados."""
     return jsonify({"clean_text": clean_text(_SAMPLE_MESSAGES)})
+
+
+@app.route("/utils/wordcloud", methods=["GET"])
+def utils_wordcloud():
+    """Endpoint de prueba para Task 3 — usa datos hardcodeados."""
+    return jsonify({"wordcloud_base64": generate_wordcloud_base64(_SAMPLE_MESSAGES)})
 
 
 if __name__ == "__main__":
