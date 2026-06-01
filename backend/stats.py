@@ -2,7 +2,7 @@ from collections import Counter
 
 import emoji
 
-from .parser import parse_timestamp
+from parser import parse_timestamp
 
 
 def messages_by_hour(messages: list[dict]) -> dict[int, int]:
@@ -134,3 +134,38 @@ def count_messages_per_user(messages: list[dict]) -> dict[str, int]:
     """
     counter: Counter = Counter(msg["sender"] for msg in messages)
     return dict(counter.most_common())
+
+
+def top_days(messages: list[dict], n: int = 5) -> list[list]:
+    """
+    Retorna los N días con más mensajes, ordenados de mayor a menor.
+
+    Parámetros:
+        messages (list[dict]): Lista de mensajes retornada por parse_lines().
+        n (int): Cantidad de días a retornar. Por defecto 5.
+
+    Retorna:
+        list[list]: Lista de [fecha_iso, cantidad] ordenada descendentemente.
+    """
+    by_date = messages_by_date(messages)
+    sorted_days = sorted(by_date.items(), key=lambda x: x[1], reverse=True)
+    return [[date, count] for date, count in sorted_days[:n]]
+
+
+def messages_by_weekday(messages: list[dict]) -> dict[int, int]:
+    """
+    Agrupa los mensajes según el día de la semana (0=lunes, 6=domingo).
+
+    Siempre retorna las 7 claves, con 0 para los días sin mensajes.
+
+    Parámetros:
+        messages (list[dict]): Lista de mensajes retornada por parse_lines().
+
+    Retorna:
+        dict[int, int]: Diccionario {día_semana: cantidad_de_mensajes}.
+    """
+    counter: Counter = Counter()
+    for msg in messages:
+        weekday = parse_timestamp(msg["timestamp"]).weekday()
+        counter[weekday] += 1
+    return {day: counter.get(day, 0) for day in range(7)}
