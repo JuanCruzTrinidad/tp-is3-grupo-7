@@ -1,50 +1,64 @@
-from flask import Flask, jsonify
+import zipfile
+import io
 
-from stats import top_days, messages_by_weekday
-from text_utils import clean_text, generate_wordcloud_base64
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+
+from parser import parse_lines, validate_format
+from stats import (
+    count_messages_per_user,
+    count_emojis_per_user,
+    messages_by_hour,
+    messages_by_weekday,
+    most_frequent_emoji,
+    top_days,
+)
+from text_utils import generate_wordcloud_base64
 
 app = Flask(__name__)
-
-# Datos hardcodeados para verificar Task 1 antes de integrar el endpoint real
-_SAMPLE_MESSAGES = [
-    {"timestamp": "14/10/2018, 19:51", "sender": "Ana", "message": "hola"},
-    {"timestamp": "14/10/2018, 20:00", "sender": "Luis", "message": "hey"},
-    {"timestamp": "15/10/2018, 10:00", "sender": "Ana", "message": "buenos días"},
-    {"timestamp": "15/10/2018, 10:05", "sender": "Luis", "message": "buen día"},
-    {"timestamp": "15/10/2018, 10:10", "sender": "Ana", "message": "cómo estás"},
-    {"timestamp": "16/10/2018, 09:00", "sender": "Luis", "message": "bien"},
-    {"timestamp": "17/10/2018, 21:00", "sender": "Ana", "message": "jaja"},
-    {"timestamp": "17/10/2018, 21:01", "sender": "Luis", "message": "😂"},
-    {"timestamp": "18/10/2018, 08:00", "sender": "Ana", "message": "ok"},
-    {"timestamp": "19/10/2018, 18:00", "sender": "Luis", "message": "nos vemos"},
-]
+CORS(app)
 
 
 @app.route("/health", methods=["GET"])
 def health():
-    """Verificación de estado del servidor."""
     return jsonify({"status": "ok"})
 
 
-@app.route("/stats/top-days", methods=["GET"])
-def stats_top_days():
-    """Endpoint de prueba para Task 1 — usa datos hardcodeados."""
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    if "file" not in request.files:
+        return jsonify({"error": "No se recibió ningún archivo."}), 400
+
+    file = request.files["file"]
+    if not file.filename.endswith(".zip"):
+        return jsonify({"error": "El archivo debe ser un .zip."}), 400
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(file.read())) as zf:
+            txt_files = [n for n in zf.namelist() if n.endswith(".txt")]
+            if not txt_files:
+                return jsonify({"error": "No se encontró un .txt dentro del .zip."}), 400
+            raw = zf.read(txt_files[0]).decode("utf-8-sig", errors="replace")
+    except zipfile.BadZipFile:
+        return jsonify({"error": "El archivo .zip está corrupto."}), 400
+
+    if not validate_format(raw):
+        return jsonify({"error": "El archivo no parece un export de WhatsApp."}), 422
+
+    messages = parse_lines(raw)
+    emoji_result = most_frequent_emoji(messages)
+
     return jsonify({
-        "top_days": top_days(_SAMPLE_MESSAGES),
-        "messages_by_weekday": messages_by_weekday(_SAMPLE_MESSAGES),
+        "total_messages": len(messages),
+        "participants": list({m["sender"] for m in messages}),
+        "messages_per_user": count_messages_per_user(messages),
+        "messages_by_hour": messages_by_hour(messages),
+        "messages_by_weekday": messages_by_weekday(messages),
+        "top_days": top_days(messages),
+        "emojis_per_user": count_emojis_per_user(messages),
+        "most_frequent_emoji": list(emoji_result) if emoji_result else None,
+        "wordcloud_base64": generate_wordcloud_base64(messages),
     })
-
-
-@app.route("/utils/clean-text", methods=["GET"])
-def utils_clean_text():
-    """Endpoint de prueba para Task 2 — usa datos hardcodeados."""
-    return jsonify({"clean_text": clean_text(_SAMPLE_MESSAGES)})
-
-
-@app.route("/utils/wordcloud", methods=["GET"])
-def utils_wordcloud():
-    """Endpoint de prueba para Task 3 — usa datos hardcodeados."""
-    return jsonify({"wordcloud_base64": generate_wordcloud_base64(_SAMPLE_MESSAGES)})
 
 
 if __name__ == "__main__":
