@@ -40,6 +40,7 @@ main { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; 
   cursor: pointer;
 }
 #upload-form button:hover { background: #1ebe5a; }
+#upload-form button:disabled { background: #9bd9b3; cursor: default; }
 
 #upload-status { margin-top: 0.5rem; color: #555; min-height: 1.2em; }
 
