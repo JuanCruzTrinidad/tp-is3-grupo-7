@@ -6,6 +6,10 @@ COPY backend/requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-descarga las stopwords de NLTK en el build para no depender de la red
+# en tiempo de ejecución (las hornea en la imagen).
+RUN python -c "import nltk; nltk.download('stopwords')"
+
 COPY backend/ .
 
 EXPOSE 5000
