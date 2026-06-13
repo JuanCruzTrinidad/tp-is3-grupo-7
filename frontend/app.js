@@ -1,35 +1,66 @@
 const BACKEND = `${window.location.protocol}//${window.location.hostname}:5000`;
 const WEEKDAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
 const form = document.getElementById("upload-form");
+const fileInput = document.getElementById("file-input");
+const submitButton = form.querySelector("button[type='submit']");
 const status = document.getElementById("upload-status");
 const results = document.getElementById("results");
 
-form.addEventListener("submit", async (e) => {
+form.addEventListener("submit", handleUpload);
+
+// Maneja el evento de carga: valida el archivo, lo envía al backend y muestra resultados.
+async function handleUpload(e) {
   e.preventDefault();
-  const file = document.getElementById("file-input").files[0];
-  if (!file) return;
 
-  status.textContent = "Analizando…";
-  results.hidden = true;
-
-  const body = new FormData();
-  body.append("file", file);
-
-  let data;
-  try {
-    const res = await fetch(`${BACKEND}/analyze`, { method: "POST", body });
-    data = await res.json();
-    if (!res.ok) { status.textContent = data.error || "Error al analizar."; return; }
-  } catch {
-    status.textContent = "No se pudo conectar con el servidor.";
+  const file = fileInput.files[0];
+  const validationError = validateFile(file);
+  if (validationError) {
+    status.textContent = validationError;
     return;
   }
 
-  status.textContent = "";
-  renderAll(data);
-  results.hidden = false;
-});
+  status.textContent = "Analizando…";
+  results.hidden = true;
+  submitButton.disabled = true;
+
+  try {
+    const data = await sendToBackend(file);
+    status.textContent = "";
+    renderAll(data);
+    results.hidden = false;
+  } catch (err) {
+    status.textContent = err.message;
+  } finally {
+    submitButton.disabled = false;
+  }
+}
+
+// Validación client-side antes de enviar (evita un round-trip innecesario).
+function validateFile(file) {
+  if (!file) return "Seleccioná un archivo .zip antes de analizar.";
+  if (!file.name.toLowerCase().endsWith(".zip")) return "El archivo debe ser un .zip.";
+  if (file.size > MAX_FILE_SIZE) return "El archivo supera el tamaño máximo de 25 MB.";
+  return null;
+}
+
+// Envía el archivo por POST a /analyze y devuelve el JSON, lanzando Error si algo falla.
+async function sendToBackend(file) {
+  const body = new FormData();
+  body.append("file", file);
+
+  let res;
+  try {
+    res = await fetch(`${BACKEND}/analyze`, { method: "POST", body });
+  } catch {
+    throw new Error("No se pudo conectar con el servidor.");
+  }
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Error al analizar.");
+  return data;
+}
 
 function renderAll(data) {
   // Resumen
