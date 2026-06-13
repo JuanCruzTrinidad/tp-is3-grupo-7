@@ -20,7 +20,10 @@
         <input id="file-input" type="file" name="file" accept=".zip" required />
         <button type="submit">Analizar</button>
       </form>
-      <p id="upload-status" aria-live="polite"></p>
+      <div id="upload-feedback">
+        <span class="spinner" hidden></span>
+        <p id="upload-status" aria-live="polite"></p>
+      </div>
     </section>
 
     <!-- Resultados (ocultos hasta recibir datos) -->

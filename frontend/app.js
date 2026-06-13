@@ -6,6 +6,7 @@ const form = document.getElementById("upload-form");
 const fileInput = document.getElementById("file-input");
 const submitButton = form.querySelector("button[type='submit']");
 const status = document.getElementById("upload-status");
+const spinner = document.querySelector("#upload-feedback .spinner");
 const results = document.getElementById("results");
 
 form.addEventListener("submit", handleUpload);
@@ -21,9 +22,8 @@ async function handleUpload(e) {
     return;
   }
 
-  status.textContent = "Analizando…";
   results.hidden = true;
-  submitButton.disabled = true;
+  setLoading(true);
 
   try {
     const data = await sendToBackend(file);
@@ -33,8 +33,17 @@ async function handleUpload(e) {
   } catch (err) {
     status.textContent = err.message;
   } finally {
-    submitButton.disabled = false;
+    setLoading(false);
   }
+}
+
+// Muestra/oculta el feedback de carga: spinner, texto y botón deshabilitado.
+// Al apagarse no toca el texto, para no pisar un mensaje de error del catch.
+function setLoading(isLoading) {
+  submitButton.disabled = isLoading;
+  spinner.hidden = !isLoading;
+  form.setAttribute("aria-busy", String(isLoading));
+  if (isLoading) status.textContent = "Analizando…";
 }
 
 // Validación client-side antes de enviar (evita un round-trip innecesario).
