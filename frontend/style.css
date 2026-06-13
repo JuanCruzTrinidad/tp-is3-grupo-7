@@ -42,7 +42,26 @@ main { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; 
 #upload-form button:hover { background: #1ebe5a; }
 #upload-form button:disabled { background: #9bd9b3; cursor: default; }
 
-#upload-status { margin-top: 0.5rem; color: #555; min-height: 1.2em; }
+#upload-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+#upload-status { color: #555; min-height: 1.2em; }
+
+.spinner {
+  width: 1.1em;
+  height: 1.1em;
+  border: 3px solid #d9d9d9;
+  border-top-color: #25d366;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.spinner[hidden] { display: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Sections */
 section {
